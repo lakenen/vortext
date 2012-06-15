@@ -1,12 +1,12 @@
 # Vortext
 
-Vortext is a bit of JavaScript that transforms text when you mouse over. It depends on jQuery, so I think I'll jQuery plugin-itize it eventually, when I'm feeling unlazy.
+Vortext is a jQuery plugin that transforms text when you mouse over!
 
 [Demo](http://lakenen.com/vortext)
 
 ## How to use
 
-Include jQuery (I think 1.4+), and vortext.js in your page.
+Include jQuery (I think 1.4+), and jquery.vortext.js in your page.
 
 ```html
 <div id="example">
@@ -15,16 +15,15 @@ Include jQuery (I think 1.4+), and vortext.js in your page.
 </div>
 ```
 ```js
-vortext('#example'); // basic example radius: 100, multiplier: 2, just words
+$('#example').vortext(); // basic example radius: 100, multiplier: 2, just words
 
-vortext('#example', 50, 5, true); // radius: 50, multiplier: 5, letters
+$('#example').vortext({ radius:50, multiply: 5, letters: true });
 ```
 
 ## Issues
 
 * Lots of text can be slow, especially with letters enabled
 * Large radii can be slow
-* Resizing the browser breaks it (but still looks pretty neat :)
 * iOS issues... crashing and super-slowness
 
 

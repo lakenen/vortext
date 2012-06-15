@@ -44,38 +44,31 @@ vortext = (function () {
 			height = elt.height(),
 			texts = getTextNodesIn(elt),
 			wordData = [],
-			pt, lastPt;
+			pt, lastPt, refreshPositionsTID;
 		
 		// wrap words (or letters) with span tags
 		if (letters) {
 			reg = /(\S)/g;
 		}
 		texts.each(function (i, text) {
-			$(text).replaceWith(text.textContent.replace(reg, '<span>$1</span>'));
+			$(text).replaceWith(text.textContent.replace(reg, '<span class="vortext">$1</span>'));
 		});
 		
 		elt.css({
 			position: 'relative'
 		});
 		
-		elt.find('span').css({
+		elt.find('span.vortext').css({
 			position: 'relative',
 			display: 'inline-block'
-		}).each(function (i, word) {
-			word = $(word);
-			var pos = word.position(),
-				w = word.width(), 
-				h = word.height(),
-				x = pos.left + w/2, 
-				y = pos.top + h/2;
-			wordData.push({
-				elt: word,
-				y: y, x: x,
-				off: {
-					x: 0, y: 0, a: 0, s: 0
-				}
-			});
 		});
+		
+		var wordElts = elt.find('span.vortext').css({
+			position: 'relative',
+			display: 'inline-block'
+		});
+		
+		wordData = getPositionData(wordElts);
 		
 		$(window).bind('mousemove touchmove',function (e) {
 			pt = getCoord(e.originalEvent);
@@ -88,6 +81,11 @@ vortext = (function () {
 				outside = true;
 				loop();
 			}
+		}).bind('resize', function () {
+			clearTimeout(refreshPositionsTID);
+			refreshPositionsTID = setTimeout(function () {
+				wordData = getPositionData(wordElts);
+			}, 200);
 		});
 		
 		function inBounds(pt) {
@@ -179,6 +177,26 @@ vortext = (function () {
 			element.style['-' + domPrefix.toLowerCase() + '-transform'] = 
 				'translate('+x+'px, '+y+'px) rotate('+a+'deg) scale('+s+')';
 		
+	}
+	
+	function getPositionData(words) {
+		var wordData = [];
+		words.each(function (i, word) {
+			word = $(word);
+			var pos = word.position(),
+				w = word.width(), 
+				h = word.height(),
+				x = pos.left + w/2, 
+				y = pos.top + h/2;
+			wordData.push({
+				elt: word,
+				y: y, x: x,
+				off: {
+					x: 0, y: 0, a: 0, s: 0
+				}
+			});
+		});
+		return wordData;
 	}
 	
 	function getTextNodesIn(el) {
