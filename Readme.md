@@ -24,6 +24,8 @@ vortext('#example', 50, 5, true); // radius: 50, multiplier: 5, letters
 
 * Lots of text can be slow, especially with letters enabled
 * Large radii can be slow
+* Resizing the browser breaks it (but still looks pretty neat :)
+* iOS issues... crashing and super-slowness
 
 
 ## License 

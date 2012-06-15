@@ -77,8 +77,8 @@ vortext = (function () {
 			});
 		});
 		
-		$(window).mousemove(function (e) {
-			pt = getCoord(e);
+		$(window).bind('mousemove touchmove',function (e) {
+			pt = getCoord(e.originalEvent);
 			if (isNaN(pt.x) || isNaN(pt.y)) {
 				pt = lastPt;
 			}
@@ -140,10 +140,10 @@ vortext = (function () {
 			};
 		}
 		
-		!function runLoop() {
+		(function runLoop() {
 			loop();
 			requestAnimationFrame(runLoop);
-		}();
+		})();
 	}
 	
 	function clamp(c, a, b) {
