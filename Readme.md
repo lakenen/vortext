@@ -25,6 +25,7 @@ $('#example').vortext({ radius:50, multiply: 5, letters: true });
 * Lots of text can be slow, especially with letters enabled
 * Large radii can be slow
 * iOS issues... crashing and super-slowness
+* Calling vortext again on the same element is probably bad
 
 
 ## License 

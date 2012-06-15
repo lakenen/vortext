@@ -1,66 +1,84 @@
-// requestAnimationFrame polyfill by Erik Möller
-// fixes from Paul Irish and Tino Zijdel
-(function() {
-	var lastTime = 0;
-	var vendors = ['ms', 'moz', 'webkit', 'o'];
-	for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-		window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-		window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
-								   || window[vendors[x]+'CancelRequestAnimationFrame'];
-	}
- 
-	if (!window.requestAnimationFrame) {
-		window.requestAnimationFrame = function(callback, element) {
-			var currTime = new Date().getTime();
-			var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-			var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
-			  timeToCall);
-			lastTime = currTime + timeToCall;
-			return id;
+/*!
+Vortext.js
+Version 0.1.0
+Copyright 2012 Cameron Lakenen
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+(function ($) {
+	// requestAnimationFrame polyfill by Erik Möller
+	// fixes from Paul Irish and Tino Zijdel
+	(function() {
+		var lastTime = 0;
+		var vendors = ['ms', 'moz', 'webkit', 'o'];
+		for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+			window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+			window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
+									   || window[vendors[x]+'CancelRequestAnimationFrame'];
+		}
+	 
+		if (!window.requestAnimationFrame) {
+			window.requestAnimationFrame = function(callback, element) {
+				var currTime = new Date().getTime();
+				var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+				var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+				  timeToCall);
+				lastTime = currTime + timeToCall;
+				return id;
+			};
+		}
+		if (!window.cancelAnimationFrame) {
+			window.cancelAnimationFrame = function(id) {
+				clearTimeout(id);
+			};
+		}
+	}());
+
+	var domPrefix = '',
+		defaults = {
+			radius: 100,
+			multiply: 2,
+			letters: false
 		};
-	}
-	if (!window.cancelAnimationFrame) {
-		window.cancelAnimationFrame = function(id) {
-			clearTimeout(id);
-		};
-	}
-}());
-
-
-vortext = (function () {
-	var domPrefix = '';
-
-	function vortext(elt, radius, multiply, letters) {
+	
+	function vortext(elt, options) {
 		domPrefix = getDomPrefix();
 		elt = $(elt);
-		radius = radius || 100;
-		multiply = multiply || 2;
+		options = $.extend(defaults, options || {});
 		
-		
-		
-		var reg = /(\S+)/g,
+		var reg = options.letters ? /(\S)/g : /(\S+)/g,
 			outside = false,
 			width = elt.width(),
 			height = elt.height(),
 			texts = getTextNodesIn(elt),
-			wordData = [],
-			pt, lastPt, refreshPositionsTID;
+			radius = options.radius,
+			multiply = options.multiply,
+			pt, lastPt, wordData, refreshPositionsTID;
 		
-		// wrap words (or letters) with span tags
-		if (letters) {
-			reg = /(\S)/g;
-		}
 		texts.each(function (i, text) {
 			$(text).replaceWith(text.textContent.replace(reg, '<span class="vortext">$1</span>'));
 		});
 		
 		elt.css({
 			position: 'relative'
-		});
-		
-		elt.find('span.vortext').css({
-			position: 'relative',
-			display: 'inline-block'
 		});
 		
 		var wordElts = elt.find('span.vortext').css({
@@ -173,7 +191,7 @@ vortext = (function () {
 	function setTransform(element, x, y, a, s) {
 		x = x || 0; y = y || 0; a = a || 0; s = s || 0;
 		a *= 180/Math.PI;
-		element.style[domPrefix+'Transform'] = // hack for stupid firefox
+		element.style[domPrefix+'Transform'] = // hack for firefox
 			element.style['-' + domPrefix.toLowerCase() + '-transform'] = 
 				'translate('+x+'px, '+y+'px) rotate('+a+'deg) scale('+s+')';
 		
@@ -204,6 +222,11 @@ vortext = (function () {
 			return this.nodeType == 3;
 		});
 	};
-	
-	return vortext;	
-})();
+
+
+	$.fn.vortext = function (options) {
+		return this.each(function () {
+			vortext(this, options);
+		});
+	};
+})(jQuery);
