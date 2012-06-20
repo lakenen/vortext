@@ -77,12 +77,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			$(text).replaceWith(text.textContent.replace(reg, '<span class="vortext">$1</span>'));
 		});
 		
-		elt.css({
-			position: 'relative'
-		});
-		
 		var wordElts = elt.find('span.vortext').css({
-			position: 'relative',
 			display: 'inline-block'
 		});
 		
@@ -146,13 +141,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		}
 		
 		function getCoord(e) {
-			var off = elt.offset(),
-				pageX = e.pageX || e.touches && e.touches[0].pageX,
-				pageY = e.pageY || e.touches && e.touches[0].pageY;
-	
 			return {
-				x: Math.floor(pageX - off.left),
-				y: Math.floor(pageY - off.top)
+				x: e.pageX || e.touches && e.touches[0].pageX,
+				y: e.pageY || e.touches && e.touches[0].pageY
 			};
 		}
 		
@@ -201,7 +192,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var wordData = [];
 		words.each(function (i, word) {
 			word = $(word);
-			var pos = word.position(),
+			var pos = word.offset(),
 				w = word.width(), 
 				h = word.height(),
 				x = pos.left + w/2, 
