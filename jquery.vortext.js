@@ -71,6 +71,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			texts = getTextNodesIn(elt),
 			radius = options.radius,
 			multiply = options.multiply,
+			lastChanged = [],
 			pt, lastPt, wordData, refreshPositionsTID;
 		
 		texts.each(function (i, text) {
@@ -114,35 +115,48 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		function loop() {
 			if (pt && (!lastPt || (lastPt.x !== pt.x || lastPt.y !== pt.y))) {
 				lastPt = pt;
-				var len = wordData.length,
-					data, dir, dist, mult, 
-					newX, newY, newA, newS;
-				for (var i = 0, l = len; i < l; ++i) {
-					data = wordData[i];
-					dir	 = direction(pt, data),
-					dist = distance(pt, data),
-					mult = multiply * clamp(radius - dist, 0, radius),
-					newX = (Math.cos(dir) - Math.sin(dir)) * mult,
-					newY = (Math.sin(dir) + Math.cos(dir)) * mult,
-					newA = mult === 0 ? 0 : clamp(mult, 0, 1)*(dir+Math.PI/2),
-					newS = clamp(2*(1 + mult)/radius, 1, radius/2);
-					
-					if (newX === data.off.x && newY === data.off.y && 
-						newA === data.off.a && newS === data.off.s)
-					{
-						continue;
-					}
-					
-					setTransform(data.elt.get(0), newX, newY, newA, newS);
-					
-					data.off = {
-						x: newX,
-						y: newY,
-						a: newA, 
-						s: newS
-					};
-				}
+				var wordsToUpdate = lastChanged.concat(findWordsWithinRadius(wordData, pt, radius));
+				updateWords(wordsToUpdate);
 			}
+		}
+		
+		function updateWords(words) {
+			var len = words.length,
+				data, dir, dist, mult, 
+				newX, newY, newA, newS,
+				newLastChanged = [];
+			for (var i = 0, l = len; i < l; ++i) {
+				data = words[i];
+				dir	 = direction(pt, data),
+				dist = distance(pt, data),
+				mult = multiply * clamp(radius - dist, 0, radius),
+				cosDir = Math.cos(dir),
+				sinDir = Math.sin(dir),
+				newX = (cosDir - sinDir) * mult,
+				newY = (sinDir + cosDir) * mult,
+				newA = mult === 0 ? 0 : clamp(Math.abs(mult), 0, 1)*(dir+Math.PI/2),
+				newS = clamp(2*(1 + Math.abs(mult))/radius, 1, radius/2);
+				
+				if (newX === data.off.x && newY === data.off.y && 
+					newA === data.off.a && newS === data.off.s)
+				{
+					continue;
+				}
+				
+				setTransform(data.elt.get(0), newX, newY, newA, newS);
+				
+				if (newX !== 0 || newY !== 0 || newA !== 0 || newS !== 0) {
+					newLastChanged.push(data);
+				}
+				
+				data.off = {
+					x: newX,
+					y: newY,
+					a: newA, 
+					s: newS
+				};
+			}
+			lastChanged = newLastChanged;
 		}
 		
 		function getCoord(e) {
@@ -167,7 +181,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	}
 	
 	function distance(a, b) {
-		return Math.sqrt(Math.pow(a.x - b.x,2) + Math.pow(a.y - b.y,2));
+		return Math.sqrt(pow2(a.x - b.x) + pow2(a.y - b.y));
+	}
+	function distanceLessThan(a, b, radius) {
+		var dx = a.x - b.x, dy = a.y - b.y;
+		return dx*dx + dy*dy < radius*radius;
+	}
+	function pow2(x) {
+		return x*x;
 	}
 	
 	// direction from a TO b
@@ -215,6 +236,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			});
 		});
 		return wordData;
+	}
+	
+	function findWordsWithinRadius(wordData, pt, radius) {
+		var len = wordData.length,
+			out = [],
+			data;
+		for (var i = 0, l = len; i < l; ++i) {
+			data = wordData[i];
+			if (data.y < pt.y - radius || data.x < pt.x - radius || data.x > pt.x + radius) continue;
+			if (data.y > pt.y + radius) break;
+			if (distanceLessThan(pt, data, radius)) {
+				out.push(data);
+			}
+		}
+		return out;
 	}
 	
 	function getTextNodesIn(el) {
