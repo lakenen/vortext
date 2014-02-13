@@ -2,7 +2,7 @@
 
 Vortext is a jQuery plugin that transforms text when you mouse over!
 
-[Demo](http://lakenen.com/vortext)
+[Demo](http://lakenen.github.io/vortext/)
 
 ## How to use
 
@@ -32,7 +32,7 @@ $('#example').vortext({ radius:50, multiply: 5, letters: true });
 
 (The MIT License)
 
-Copyright 2012 Cameron Lakenen
+Copyright 2014 Cameron Lakenen
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
